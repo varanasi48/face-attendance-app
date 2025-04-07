@@ -33,22 +33,22 @@ jobs:
           cd ../..
 
       - name: List files in the backend before zipping
-        run: ls -al ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
+        run: ls -al ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}  # Confirm files before zipping
 
       - name: Zip backend for deployment
         run: |
           echo "Zipping the backend code..."
           cd ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
           zip -r ../../release.zip ./*
-          ls -al ../../release.zip  # Verify that the file is created
+          ls -al ../../release.zip  # Confirm release.zip exists after zipping
           cd ../..
 
       - name: Upload artifact for deployment
         uses: actions/upload-artifact@v4
         with:
-          name: node-app
+          name: node-app  # Ensure artifact name is consistent
           path: release.zip
-          retention-days: 1  # Optional: makes sure the artifact isn't expired
+          retention-days: 1  # Optional: Ensures the artifact is available for 1 day
 
   deploy:
     runs-on: ubuntu-latest
@@ -61,14 +61,14 @@ jobs:
       - name: Download artifact from build job
         uses: actions/download-artifact@v4
         with:
-          name: node-app
-          path: ./  # Ensure artifact is downloaded to the current directory
+          name: node-app  # Ensure artifact name is consistent during download
+          path: ./  # Download to the current directory
 
       - name: List files after downloading artifact
-        run: ls -al ./  # Check if the artifact is available
+        run: ls -al ./  # Confirm the artifact is downloaded here
 
       - name: Unzip artifact
-        run: unzip ./release.zip -d ./ # Unzip to the current directory
+        run: unzip ./release.zip -d ./  # Unzip to the current directory
 
       - name: Deploy to Azure Functions
         uses: Azure/functions-action@v1
