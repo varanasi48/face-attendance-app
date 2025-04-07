@@ -34,8 +34,9 @@ jobs:
 
       - name: Zip backend for deployment
         run: |
+          echo "Zipping the backend code..."
           cd ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
-          zip -r ../../release.zip ./
+          zip -r ../../release.zip ./*
           cd ../..
 
       - name: Upload artifact for deployment
@@ -49,22 +50,22 @@ jobs:
     needs: build
 
     steps:
-      - name: Checkout
+      - name: Checkout the repo
         uses: actions/checkout@v4
 
       - name: Download artifact from build job
         uses: actions/download-artifact@v4
         with:
           name: node-app
-          path: .
+          path: ./ # Ensure artifact is downloaded here
 
       - name: Unzip artifact
-        run: unzip release.zip
+        run: unzip ./release.zip -d ./ # Unzip to current directory
 
       - name: Deploy to Azure Functions
         uses: Azure/functions-action@v1
         with:
           app-name: 'attendance-system'
           slot-name: 'Production'
-          package: '.'
+          package: './' # Deploy from the current directory
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_6990CE976B0548079E103CFBF1F348B2 }}
