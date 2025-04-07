@@ -32,11 +32,15 @@ jobs:
           npm run build --if-present
           cd ../..
 
+      - name: List files in the backend before zipping
+        run: ls -al ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
+
       - name: Zip backend for deployment
         run: |
           echo "Zipping the backend code..."
           cd ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
           zip -r ../../release.zip ./*
+          ls -al ../../release.zip  # Verify that the file is created
           cd ../..
 
       - name: Upload artifact for deployment
@@ -44,6 +48,7 @@ jobs:
         with:
           name: node-app
           path: release.zip
+          retention-days: 1  # Optional: makes sure the artifact isn't expired
 
   deploy:
     runs-on: ubuntu-latest
@@ -57,15 +62,18 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: node-app
-          path: ./ # Ensure artifact is downloaded here
+          path: ./  # Ensure artifact is downloaded to the current directory
+
+      - name: List files after downloading artifact
+        run: ls -al ./  # Check if the artifact is available
 
       - name: Unzip artifact
-        run: unzip ./release.zip -d ./ # Unzip to current directory
+        run: unzip ./release.zip -d ./ # Unzip to the current directory
 
       - name: Deploy to Azure Functions
         uses: Azure/functions-action@v1
         with:
           app-name: 'attendance-system'
           slot-name: 'Production'
-          package: './' # Deploy from the current directory
+          package: './'  # Deploy from the current directory
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_6990CE976B0548079E103CFBF1F348B2 }}
