@@ -1,99 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Capture Image from Camera</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Attendance System</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h2>Capture Image for Registration</h2>
-
-    <!-- Button to capture image -->
-    <button id="captureButton">Capture Image</button>
-
-    <!-- Video element for camera feed -->
-    <video id="video" width="640" height="480" autoplay></video>
-
-    <!-- Canvas element for taking the snapshot -->
-    <canvas id="canvas" width="640" height="480" style="display:none;"></canvas>
-
-    <!-- Form to submit image data -->
-    <form id="registerForm">
-        <input type="text" id="phoneNumber" placeholder="Phone Number" required><br><br>
-        <button type="submit">Submit</button>
-    </form>
-
-    <script>
-        // Get elements
-        const video = document.getElementById('video');
-        const canvas = document.getElementById('canvas');
-        const captureButton = document.getElementById('captureButton');
-        const phoneInput = document.getElementById('phoneNumber');
-        const form = document.getElementById('registerForm');
-
-        // Start video stream from the user's camera
-        navigator.mediaDevices.getUserMedia({ video: true })
-            .then(function (stream) {
-                video.srcObject = stream;
-            })
-            .catch(function (error) {
-                console.error('Error accessing camera: ', error);
-            });
-
-        // Capture image when the button is clicked
-        captureButton.addEventListener('click', function () {
-            // Draw the current frame from the video onto the canvas
-            const context = canvas.getContext('2d');
-            context.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-            // Show the canvas (for debugging, you can hide it afterward)
-            // canvas.style.display = 'block';
-
-            // Get the image as a base64-encoded PNG
-            const imageData = canvas.toDataURL('image/png');
-            console.log('Captured image data:', imageData);
-
-            // Save the image data to the form to be sent with the phone number
-            form.imageData = imageData;
-        });
-
-        // Handle form submission
-        form.addEventListener('submit', function (event) {
-            event.preventDefault();
-
-            const phone = phoneInput.value;
-            const image = form.imageData;
-
-            if (!phone || !image) {
-                alert('Please capture an image and enter a phone number');
-                return;
-            }
-
-            // Prepare the data to send
-            const formData = {
-                phone: phone,
-                image: image.split(',')[1]  // Extract the base64 part without the data URL header
-            };
-
-            // Send the data to your backend (Azure Function)
-            fetch('https://attendance-system.azurewebsites.net/api/RegisterUser', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData)
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.message) {
-                    alert(data.message);
-                } else {
-                    alert('Error: ' + data.error);
-                }
-            })
-            .catch(error => {
-                console.error('Error during registration:', error);
-                alert('An error occurred while registering the face.');
-            });
-        });
-    </script>
+  <header>
+    <h1>Attendance System</h1>
+    <nav>
+      <ul>
+        <li><a href="register.html">Register</a></li>
+        <li><a href="mark-attendance.html">Mark Attendance</a></li>
+        <li><a href="report.html">View Report</a></li>
+      </ul>
+    </nav>
+  </header>
 </body>
 </html>
