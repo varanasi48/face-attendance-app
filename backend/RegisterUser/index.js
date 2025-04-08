@@ -3,32 +3,27 @@ const { MongoClient } = require("mongodb");
 
 const FACE_ENDPOINT = process.env["FACE_API_ENDPOINT"];
 const FACE_KEY = process.env["FACE_API_KEY"];
-const PERSON_GROUP_ID = "attendance-group";  // Ensure this person group is created in Azure Face API
+const PERSON_GROUP_ID = "attendance-group";
 const MONGO_URI = process.env["MONGO_URI"];
 
 module.exports = async function (context, req) {
-  const { phone, imageBase64 } = req.body;
-
-  // Validate request body
-  if (!phone || !imageBase64) {
-    context.res = { status: 400, body: "Missing phone or image" };
-    return;
-  }
-
-  const client = new MongoClient(MONGO_URI);
+  context.log("RegisterUser function called");
 
   try {
-    // Connect to MongoDB
-    await client.connect();
-    const db = client.db("attendance");
-    const users = db.collection("users");
+    const { phone, imageBase64 } = req.body || {};
 
-    // Check if the user is already registered
-    const existingUser = await users.findOne({ phone });
-    if (existingUser) {
-      context.res = { status: 400, body: "User already registered" };
+    if (!phone || !imageBase64) {
+      context.log.error("Missing phone or imageBase64 in request body");
+      context.res = { status: 400, body: "Missing phone or image" };
       return;
     }
+
+    const client = new MongoClient(MONGO_URI);
+    await client.connect();
+    context.log("Connected to MongoDB");
+
+    const db = client.db("attendance");
+    const users = db.collection("users");
 
     // Create person in Face API
     const createPersonResponse = await axios.post(
@@ -38,8 +33,9 @@ module.exports = async function (context, req) {
     );
 
     const personId = createPersonResponse.data.personId;
+    context.log("Created person with ID:", personId);
 
-    // Add face to person
+    // Add face
     const addFaceResponse = await axios.post(
       `${FACE_ENDPOINT}/face/v1.0/persongroups/${PERSON_GROUP_ID}/persons/${personId}/persistedFaces`,
       Buffer.from(imageBase64, "base64"),
@@ -50,21 +46,15 @@ module.exports = async function (context, req) {
         },
       }
     );
+    context.log("Added face to person:", addFaceResponse.data);
 
-    if (addFaceResponse.status !== 200) {
-      throw new Error("Failed to add face to person in Azure Face API");
-    }
-
-    // Save user to MongoDB
+    // Save to DB
     await users.insertOne({ phone, personId });
+    context.log("User saved to DB");
 
-    // Respond with success
     context.res = { status: 200, body: "User registered successfully" };
   } catch (err) {
-    // Handle errors and provide appropriate feedback
-    context.res = { status: 500, body: `Error: ${err.message}` };
-  } finally {
-    // Close MongoDB connection
-    await client.close();
+    context.log.error("Function failed:", err.message);
+    context.res = { status: 500, body: "Internal Server Error: " + err.message };
   }
 };
