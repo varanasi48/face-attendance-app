@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     try {
-      const response = await fetch('https://attendance-system.azurewebsites.net/api/RegisterUser', {
+      const response = await fetch('YOUR_AZURE_FUNCTION_URL/RegisterUser', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
