@@ -23,9 +23,14 @@
       <label for="phone">Phone Number:</label>
       <input type="text" id="phone" name="phone" required>
 
-      <label for="image">Upload Image:</label>
-      <input type="file" id="image" name="image" accept="image/*" required>
+      <div>
+        <video id="video" width="320" height="240" autoplay></video>
+        <button type="button" id="captureButton">Capture Image</button>
+      </div>
 
+      <canvas id="canvas" style="display: none;"></canvas>
+      <input type="hidden" id="imageBase64" name="imageBase64">
+      
       <button type="submit">Register</button>
     </form>
     <div id="statusMessage"></div>
