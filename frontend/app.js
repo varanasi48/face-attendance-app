@@ -1,53 +1,53 @@
-const video = document.getElementById("video");
-const phoneInput = document.getElementById("phone");
+// Register Face Function
+async function registerFace() {
+    const imageFile = document.getElementById('registerImage').files[0];
+    const phoneNumber = document.getElementById('phoneNumber').value;
 
-// 1. Start the webcam
-navigator.mediaDevices.getUserMedia({ video: true })
-  .then((stream) => {
-    video.srcObject = stream;
-  })
-  .catch((err) => {
-    alert("Error accessing webcam: " + err.message);
-  });
+    if (!imageFile || !phoneNumber) {
+        alert("Please provide both an image and a phone number.");
+        return;
+    }
 
-// 2. Capture image from webcam
-function captureImage() {
-  const canvas = document.createElement("canvas");
-  canvas.width = video.videoWidth;
-  canvas.height = video.videoHeight;
-  const context = canvas.getContext("2d");
-  context.drawImage(video, 0, 0);
-  return canvas.toDataURL("image/jpeg").split(",")[1]; // base64 without prefix
+    const formData = new FormData();
+    formData.append('image', imageFile);
+    formData.append('phone', phoneNumber);
+
+    const response = await fetch('https://attendance-system.azurewebsites.net/api/RegisterUser?code=b-PkIJLlvez6gswJP8npox4qijgsAsIce57LhUurlfe6AzFuPobCoQ==', {
+        method: 'POST',
+        body: formData
+    });
+
+    const data = await response.json();
+    if (response.ok) {
+        alert("Face registered successfully!");
+    } else {
+        alert("Failed to register face: " + data.message);
+    }
 }
 
-// 3. Call backend to register user
-async function register() {
-  const phone = phoneInput.value;
-  if (!phone) return alert("Enter phone number");
-
-  const imageBase64 = captureImage();
-  const response = await fetch("/api/RegisterUser", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ phone, imageBase64 })
-  });
-
-  const result = await response.text();
-  alert("Register: " + result);
-}
-
-// 4. Call backend to mark attendance
+// Mark Attendance Function
 async function markAttendance() {
-  const phone = phoneInput.value;
-  if (!phone) return alert("Enter phone number");
+    const imageFile = document.getElementById('attendanceImage').files[0];
+    const phoneNumber = document.getElementById('attendancePhoneNumber').value;
 
-  const imageBase64 = captureImage();
-  const response = await fetch("/api/MarkAttendance", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ phone, imageBase64 })
-  });
+    if (!imageFile || !phoneNumber) {
+        alert("Please provide both an image and a phone number.");
+        return;
+    }
 
-  const result = await response.text();
-  alert("Attendance: " + result);
+    const formData = new FormData();
+    formData.append('image', imageFile);
+    formData.append('phone', phoneNumber);
+
+    const response = await fetch('https://attendance-system.azurewebsites.net/api/MarkAttendance?code=Ai5JIA1BnpU9FCVKM_HImnNyVGYyh2zYbA_PB8ZFYRCqAzFuG6QpVg==', {
+        method: 'POST',
+        body: formData
+    });
+
+    const data = await response.json();
+    if (response.ok) {
+        alert("Attendance marked for " + data.name);
+    } else {
+        alert("Failed to mark attendance: " + data.message);
+    }
 }
