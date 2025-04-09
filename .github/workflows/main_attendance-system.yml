@@ -74,5 +74,5 @@ jobs:
         with:
           app-name: 'attendance-system'  # Azure Function App name
           slot-name: 'Production'  # Azure deployment slot
-          package: './'  # Deploy from the current directory
+          package: './backend'  # Deploy from the current directory
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_6990CE976B0548079E103CFBF1F348B2 }}
